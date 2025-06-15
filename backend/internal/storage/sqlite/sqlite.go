@@ -2,7 +2,9 @@ package sqlite
 
 import (
 	"database/sql"
+	"fmt"
 
+	_ "github.com/mattn/go-sqlite3"
 	"github.com/sudhanshu042004/sandbox/internal/config"
 )
 
@@ -10,20 +12,20 @@ type Sqlite struct {
 	Db *sql.DB
 }
 
-func NewUser(cfg config.Config) (*Sqlite, error) {
-	db, err := sql.Open("sqlite3", cfg.Address)
+func New(cfg config.Config) (*Sqlite, error) { // create new instance of sqlite for ya
+	db, err := sql.Open("sqlite3", cfg.Storage)
 	if err != nil {
 		return nil, err
 	}
-	_, err = db.Exec(`CREATE TABLE IF NOT EXITS user(
-	id INTEGER PRIMARY KEY AUTOINCREMENT
-	name TEXT
-	email TEXT
-	password TEXT
-	)`)
+	_, err = db.Exec(`CREATE TABLE IF NOT EXISTS user(
+		id INTEGER PRIMARY KEY AUTOINCREMENT,
+		name TEXT,
+		email TEXT,
+		password TEXT
+		)`)
 
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("error while creating db instance %s", err)
 	}
 
 	return &Sqlite{

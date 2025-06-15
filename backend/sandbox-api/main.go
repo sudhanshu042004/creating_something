@@ -11,19 +11,24 @@ import (
 	"time"
 
 	"github.com/sudhanshu042004/sandbox/internal/config"
+	"github.com/sudhanshu042004/sandbox/internal/http/handlers/user"
+	"github.com/sudhanshu042004/sandbox/internal/storage/sqlite"
 )
 
 func main() {
 	//load config
 	cfg := config.MustLoad()
 	//db setup
+	storage, err := sqlite.New(*cfg)
+	if err != nil {
+		log.Fatal(err)
+	}
+	slog.Info("storage intialised", slog.String("env", cfg.Env), slog.String("version", "1.0.0"))
 
 	//setup router
 	router := http.NewServeMux()
-	router.HandleFunc("GET /api/ping", func(w http.ResponseWriter, r *http.Request) {
-		w.Write([]byte("you pinged sandbox api"))
-	})
-
+	//ping server
+	router.HandleFunc("POST /api/user", user.New(storage))
 	//setup server
 	server := http.Server{
 		Addr:    cfg.Address,
