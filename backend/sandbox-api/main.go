@@ -11,7 +11,7 @@ import (
 	"time"
 
 	"github.com/sudhanshu042004/sandbox/internal/config"
-	"github.com/sudhanshu042004/sandbox/internal/http/handlers/user"
+	"github.com/sudhanshu042004/sandbox/internal/http/handlers/auth"
 	"github.com/sudhanshu042004/sandbox/internal/storage/sqlite"
 )
 
@@ -27,8 +27,8 @@ func main() {
 
 	//setup router
 	router := http.NewServeMux()
-	//ping server
-	router.HandleFunc("POST /api/user", user.New(storage))
+	router.HandleFunc("POST /api/login", auth.Login(storage))
+	router.HandleFunc("POST /api/signup", auth.SignUp(storage))
 	//setup server
 	server := http.Server{
 		Addr:    cfg.Address,

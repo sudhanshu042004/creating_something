@@ -6,6 +6,8 @@ import (
 
 	_ "github.com/mattn/go-sqlite3"
 	"github.com/sudhanshu042004/sandbox/internal/config"
+	"github.com/sudhanshu042004/sandbox/internal/types"
+	"github.com/sudhanshu042004/sandbox/internal/utils/response"
 )
 
 type Sqlite struct {
@@ -52,4 +54,23 @@ func (s *Sqlite) CreateUser(name string, email string, password string) (int64, 
 		return 0, err
 	}
 	return lastId, nil
+}
+
+func (s *Sqlite) GetUser(email string) (types.User, error) {
+	stmt, err := s.Db.Prepare("SELECT id,name,email,password FROM user WHERE email = ? LIMIT 1")
+	if err != nil {
+		return types.User{}, err
+	}
+	defer stmt.Close()
+
+	var user types.User
+
+	err = stmt.QueryRow(email).Scan(&user.Id, &user.Name, &user.Email, &user.Password)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return types.User{}, response.ErrUserNotFound
+		}
+		return types.User{}, fmt.Errorf("query error: %w", err)
+	}
+	return user, nil
 }

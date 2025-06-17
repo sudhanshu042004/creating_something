@@ -2,6 +2,7 @@ package response
 
 import (
 	"encoding/json"
+	"errors"
 	"net/http"
 	"strings"
 
@@ -12,6 +13,8 @@ type Response struct {
 	Status string `json:"status"`
 	Error  string `json:"error"`
 }
+
+var ErrUserNotFound = errors.New("user not found")
 
 const (
 	StatusOk    = "Ok"

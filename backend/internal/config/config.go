@@ -13,10 +13,13 @@ type HttpServer struct {
 }
 
 type Config struct {
-	Env        string `yaml:"env" env:"ENV" env-required:"true" env-default:"production"`
-	Storage    string `yaml:"storage" env-required:"true"`
-	HttpServer `yaml:"http_server"`
+	Env         string `yaml:"env" env:"ENV" env-required:"true" env-default:"production"`
+	Storage     string `yaml:"storage" env-required:"true"`
+	TokenSecret string `yaml:"token_secret" env-required:"true"`
+	HttpServer  `yaml:"http_server"`
 }
+
+var Cfg *Config
 
 func MustLoad() *Config {
 	var configPath string
@@ -41,7 +44,7 @@ func MustLoad() *Config {
 	if err != nil {
 		log.Fatalf("can not read config file: %s", err.Error())
 	}
-
-	return &cfg
+	Cfg = &cfg
+	return Cfg
 
 }
