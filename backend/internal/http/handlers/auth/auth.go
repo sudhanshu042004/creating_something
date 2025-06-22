@@ -7,6 +7,7 @@ import (
 	"io"
 	"log/slog"
 	"net/http"
+	"regexp"
 
 	"github.com/go-playground/validator/v10"
 	"github.com/sudhanshu042004/sandbox/internal/storage"
@@ -30,12 +31,32 @@ func SignUp(storage storage.Storage) http.HandlerFunc {
 			response.WriteJson(w, http.StatusBadRequest, response.GeneralError(err))
 			return
 		}
+		  // email checks if the email provided is valid by regex.
+		  emailRegex := regexp.MustCompile(`^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$`)
+		  if !emailRegex.MatchString(user.Email) {
+			  response.WriteJson(w, http.StatusBadRequest, 
+				  response.GeneralError(fmt.Errorf("invalid email format")))
+			  return
+		  }
+  
 		//validation
 		if err := validator.New().Struct(user); err != nil {
 			validationErr := err.(validator.ValidationErrors)
 			response.WriteJson(w, http.StatusBadRequest, response.ValidationError(validationErr))
 			return
 		}
+
+		// user already exists krte hai ess email se 
+	   existingUser, err := storage.GetUser(user.Email)
+
+	   if err != nil && !errors.Is(err,response.ErrUserNotFound){
+		response.WriteJson(w,http.StatusInternalServerError, response.GeneralError(err))
+	   }
+
+	   if existingUser != nil {
+         response.WriteJson(w,http.StatusConflict,response.GeneralError(fmt.Errorf("user already exists this email")))
+		 return
+	   }
 
 		//bcrypt
 		hashedPassword, err := hashing.HashPassword(user.Password)
@@ -84,11 +105,13 @@ func Login(storage storage.Storage) http.HandlerFunc {
 			response.WriteJson(w, http.StatusBadRequest, response.ValidationError(validationErr))
 			return
 		}
-		//verifying
+
+		// check if user is exists yaa not exists
 		existingUser, err := storage.GetUser(user.Email)
 		if err != nil {
 			if errors.Is(err, response.ErrUserNotFound) {
-				response.WriteJson(w, http.StatusNotFound, err)
+				response.WriteJson(w, http.StatusUnauthorized, 
+					response.GeneralError(fmt.Errorf("invalid email or password")))
 				return
 			}
 			response.WriteJson(w, http.StatusInternalServerError, err)

@@ -56,10 +56,10 @@ func (s *Sqlite) CreateUser(name string, email string, password string) (int64, 
 	return lastId, nil
 }
 
-func (s *Sqlite) GetUser(email string) (types.User, error) {
+func (s *Sqlite) GetUser(email string) (*types.User, error) {
 	stmt, err := s.Db.Prepare("SELECT id,name,email,password FROM user WHERE email = ? LIMIT 1")
 	if err != nil {
-		return types.User{}, err
+		return  nil, err
 	}
 	defer stmt.Close()
 
@@ -68,9 +68,9 @@ func (s *Sqlite) GetUser(email string) (types.User, error) {
 	err = stmt.QueryRow(email).Scan(&user.Id, &user.Name, &user.Email, &user.Password)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return types.User{}, response.ErrUserNotFound
+			return nil, response.ErrUserNotFound
 		}
-		return types.User{}, fmt.Errorf("query error: %w", err)
+		return nil, fmt.Errorf("query error: %w", err)
 	}
-	return user, nil
+	return &user, nil
 }
