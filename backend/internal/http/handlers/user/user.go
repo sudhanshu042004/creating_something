@@ -45,3 +45,9 @@ func New(storage storage.Storage) http.HandlerFunc {
 		response.WriteJson(w, http.StatusOK, map[string]int64{"id": lastId})
 	}
 }
+
+func GetUser(storage storage.Storage) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+
+	}
+}

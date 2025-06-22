@@ -109,6 +109,13 @@ func Login(storage storage.Storage) http.HandlerFunc {
 		}
 
 		token.SetAuthCookie(w, tokenString)
-		response.WriteJson(w, http.StatusOK, map[string]string{"message": "successs"})
+		response.WriteJson(w, http.StatusOK, map[string]string{"message": "success"})
+	}
+}
+
+func Logout() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		token.DeleteAuthCookie(w)
+		response.WriteJson(w, http.StatusOK, map[string]string{"message": "success"})
 	}
 }
